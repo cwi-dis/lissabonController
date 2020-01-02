@@ -31,8 +31,10 @@ IotsaBatteryMod batteryMod(application);
 
 #include "iotsaTouch.h"
 Touchpad pads[] = {
+  Touchpad(2, true, false, true),
   Touchpad(12, true, false, true),
   Touchpad(13, true, false, true),
+  Touchpad(14, true, false, true),
   Touchpad(15, true, false, true)
 };
 
@@ -57,8 +59,42 @@ protected:
   bool putHandler(const char *path, const JsonVariant& request, JsonObject& reply);
 private:
   void handler();
+  bool touch2();
+  bool touch12();
+  bool touch13();
+  bool touch14();
+  bool touch15();
 };
 
+bool
+IotsaLedstripControllerMod::touch2() {
+  IFDEBUG IotsaSerial.println("touch2()");
+  return true;
+}
+
+bool
+IotsaLedstripControllerMod::touch12() {
+  IFDEBUG IotsaSerial.println("touch12()");
+  return true;
+}
+
+bool
+IotsaLedstripControllerMod::touch13() {
+  IFDEBUG IotsaSerial.println("touch13()");
+  return true;
+}
+
+bool
+IotsaLedstripControllerMod::touch14() {
+  IFDEBUG IotsaSerial.println("touch14()");
+  return true;
+}
+
+bool
+IotsaLedstripControllerMod::touch15() {
+  IFDEBUG IotsaSerial.println("touch15()");
+  return true;
+}
 
 #ifdef IOTSA_WITH_WEB
 void
@@ -317,10 +353,12 @@ void IotsaLedstripControllerMod::configSave() {
 }
 
 void IotsaLedstripControllerMod::setup() {
+  pads[0].setCallback(std::bind(&IotsaLedstripControllerMod::touch2, this));
+  pads[1].setCallback(std::bind(&IotsaLedstripControllerMod::touch12, this));
+  pads[2].setCallback(std::bind(&IotsaLedstripControllerMod::touch13, this));
+  pads[3].setCallback(std::bind(&IotsaLedstripControllerMod::touch14, this));
+  pads[4].setCallback(std::bind(&IotsaLedstripControllerMod::touch15, this));
 #if 0
-  pads[0].setCallback(std::bind(&IotsaLedstripControllerMod::touchedOn, this));
-  pads[1].setCallback(std::bind(&IotsaLedstripControllerMod::touchedOff, this));
-  pads[2].setCallback(std::bind(&IotsaLedstripControllerMod::touchedProgram, this));
 #ifdef PIN_VBAT
   batteryMod.setPinVBat(PIN_VBAT, VBAT_100_PERCENT);
 #endif
