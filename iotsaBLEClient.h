@@ -19,6 +19,9 @@ public:
   String info() { return ""; }
 protected:
   void onResult(BLEAdvertisedDevice advertisedDevice);
+  void startScanning();
+  void stopScanning();
+  static void scanComplete(BLEScanResults results);
   BLEScan *scanner = NULL;
 };
 
