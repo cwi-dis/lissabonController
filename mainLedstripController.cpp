@@ -40,6 +40,8 @@ Touchpad pads[] = {
 
 IotsaTouchMod touchMod(application, pads, sizeof(pads)/sizeof(pads[0]));
 
+#include "iotsaBLEClient.h"
+IotsaBLEClientMod bleClientMod(application);
 //
 // LED Lighting module. 
 //
