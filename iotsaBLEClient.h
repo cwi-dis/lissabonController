@@ -4,6 +4,8 @@
 #include "iotsaApi.h"
 #include <BLEDevice.h>
 
+typedef std::function<void(BLEAdvertisedDevice&)> BleDeviceFoundCallback;
+
 class IotsaBLEOtherDevice {
   friend class IotsaBLEClientMod;
 public:
@@ -17,12 +19,19 @@ public:
   void serverSetup();
   void loop();
   String info() { return ""; }
+  void setDeviceFoundCallback(BleDeviceFoundCallback _callback);
+  void setServiceFilter(const BLEUUID& serviceUUID);
+  void setManufacturerFilter(uint16_t manufacturerID);
 protected:
   void onResult(BLEAdvertisedDevice advertisedDevice);
   void startScanning();
   void stopScanning();
   static void scanComplete(BLEScanResults results);
   BLEScan *scanner = NULL;
+  BleDeviceFoundCallback callback = NULL;
+  BLEUUID* serviceFilter = NULL;
+  uint16_t manufacturerFilter;
+  bool hasManufacturerFilter = false;
 };
 
 #endif

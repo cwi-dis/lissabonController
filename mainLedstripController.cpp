@@ -42,6 +42,10 @@ IotsaTouchMod touchMod(application, pads, sizeof(pads)/sizeof(pads[0]));
 
 #include "iotsaBLEClient.h"
 IotsaBLEClientMod bleClientMod(application);
+
+// UUID of service advertised by iotsaLedstrip devices
+BLEUUID ledstripServiceUUID("153C0001-D28E-40B8-84EB-7F64B56D4E2E");
+
 //
 // LED Lighting module. 
 //
@@ -59,6 +63,7 @@ public:
 protected:
   bool getHandler(const char *path, JsonObject& reply);
   bool putHandler(const char *path, const JsonVariant& request, JsonObject& reply);
+  void deviceFound(BLEAdvertisedDevice& device);
 private:
   void handler();
   bool touch2();
@@ -360,6 +365,9 @@ void IotsaLedstripControllerMod::setup() {
   pads[2].setCallback(std::bind(&IotsaLedstripControllerMod::touch13, this));
   pads[3].setCallback(std::bind(&IotsaLedstripControllerMod::touch14, this));
   pads[4].setCallback(std::bind(&IotsaLedstripControllerMod::touch15, this));
+  auto callback = std::bind(&IotsaLedstripControllerMod::deviceFound, this, std::placeholders::_1);
+  bleClientMod.setDeviceFoundCallback(callback);
+  bleClientMod.setServiceFilter(ledstripServiceUUID);
 #if 0
 #ifdef PIN_VBAT
   batteryMod.setPinVBat(PIN_VBAT, VBAT_100_PERCENT);
@@ -403,6 +411,10 @@ void IotsaLedstripControllerMod::setup() {
   bleApi.addCharacteristic(identifyUUID, BLE_WRITE, &identify2904, &identify2901);
 #endif
 #endif
+}
+
+void IotsaLedstripControllerMod::deviceFound(BLEAdvertisedDevice& device) {
+  IFDEBUG IotsaSerial.printf("Found iotsaLedstrip %s\n", device.getName().c_str());
 }
 
 void IotsaLedstripControllerMod::loop() {
