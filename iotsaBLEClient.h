@@ -3,13 +3,9 @@
 #include "iotsa.h"
 #include "iotsaApi.h"
 #include <BLEDevice.h>
+#include "iotsaBLEClientConnection.h"
 
 typedef std::function<void(BLEAdvertisedDevice&)> BleDeviceFoundCallback;
-
-class IotsaBLEOtherDevice {
-  friend class IotsaBLEClientMod;
-public:
-};
 
 class IotsaBLEClientMod : public IotsaMod, public BLEAdvertisedDeviceCallbacks {
 public:
