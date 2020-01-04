@@ -11,6 +11,8 @@ void IotsaBLEClientMod::setup() {
   scanner = BLEDevice::getScan();
   scanner->setAdvertisedDeviceCallbacks(this);
   scanner->setActiveScan(true);
+  scanner->setInterval(155);
+  scanner->setWindow(151);
   startScanning();
 }
 
