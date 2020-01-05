@@ -3,7 +3,7 @@
 #include "iotsa.h"
 #include <BLEDevice.h>
 
-typedef std::function<void()> BleNotificationCallback;
+typedef std::function<void(uint8_t *, size_t)> BleNotificationCallback;
 
 class IotsaBLEClientConnection {
   friend class IotsaBLEClientMod;
@@ -23,6 +23,7 @@ public:
   std::string getAsString(BLEUUID& service, BLEUUID& charUUID);
   bool getAsNotification(BLEUUID& service, BLEUUID& charUUID, BleNotificationCallback callback);
 protected:
+  BLERemoteCharacteristic *_getCharacteristic(BLEUUID& service, BLEUUID& charUUID);
   BLEAdvertisedDevice *device;
   BLEClient *client;
 };

@@ -20,11 +20,16 @@ void IotsaBLEClientConnection::disconnect() {
   }
 }
 
-bool IotsaBLEClientConnection::set(BLEUUID& serviceUUID, BLEUUID& charUUID, const uint8_t *data, size_t size) {
-  if (client == NULL) return false;
+BLERemoteCharacteristic *IotsaBLEClientConnection::_getCharacteristic(BLEUUID& serviceUUID, BLEUUID& charUUID) {
+  if (client == NULL) return NULL;
   BLERemoteService *service = client->getService(serviceUUID);
-  if (service == NULL) return false;
+  if (service == NULL) return NULL;
   BLERemoteCharacteristic *characteristic = service->getCharacteristic(charUUID);
+  return characteristic;
+}
+
+bool IotsaBLEClientConnection::set(BLEUUID& serviceUUID, BLEUUID& charUUID, const uint8_t *data, size_t size) {
+  BLERemoteCharacteristic *characteristic = _getCharacteristic(serviceUUID, charUUID);
   if (characteristic == NULL) return false;
   if (!characteristic->canWrite()) return false;
   characteristic->writeValue((uint8_t *)data, size);
@@ -52,13 +57,13 @@ bool IotsaBLEClientConnection::set(BLEUUID& serviceUUID, BLEUUID& charUUID, cons
 }
 
 bool IotsaBLEClientConnection::getAsBuffer(BLEUUID& serviceUUID, BLEUUID& charUUID, uint8_t **datap, size_t *sizep) {
-  if (client == NULL) return false;
-  BLERemoteService *service = client->getService(serviceUUID);
-  if (service == NULL) return false;
-  BLERemoteCharacteristic *characteristic = service->getCharacteristic(charUUID);
+  BLERemoteCharacteristic *characteristic = _getCharacteristic(serviceUUID, charUUID);
   if (characteristic == NULL) return false;
   if (!characteristic->canRead()) return false;
-  return false;
+  std::string value = characteristic->readValue();
+  *datap = (uint8_t *)value.c_str();
+  *sizep = value.length();
+  return true;
 }
 
 int IotsaBLEClientConnection::getAsInt(BLEUUID& serviceUUID, BLEUUID& charUUID) {
@@ -81,8 +86,22 @@ std::string IotsaBLEClientConnection:: getAsString(BLEUUID& serviceUUID, BLEUUID
   return std::string((const char *)ptr, size);
 }
 
+static BleNotificationCallback _staticCallback;
+
+static void _staticCallbackCaller(BLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
+  if (_staticCallback) _staticCallback(pData, length);
+}
+
 bool IotsaBLEClientConnection::getAsNotification(BLEUUID& serviceUUID, BLEUUID& charUUID, BleNotificationCallback callback) {
-  assert(0);
+  if (_staticCallback != NULL) {
+    IotsaSerial.println("IotsaBLEClientConnection: only a single notification supported");
+    return false;
+  }
+  BLERemoteCharacteristic *characteristic = _getCharacteristic(serviceUUID, charUUID);
+  if (characteristic == NULL) return false;
+  if (!characteristic->canNotify()) return false;
+  _staticCallback = callback;
+  characteristic->registerForNotify(_staticCallbackCaller);
   return false;
 }
 
