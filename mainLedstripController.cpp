@@ -46,8 +46,17 @@ IotsaBLEClientMod bleClientMod(application);
 // UUID of service advertised by iotsaLedstrip devices
 BLEUUID ledstripServiceUUID("153C0001-D28E-40B8-84EB-7F64B56D4E2E");
 
+#include <Wire.h>
+#include "Adafruit_GFX.h"
+#include "Adafruit_SSD1306.h"
+#define PIN_SDA 5
+#define PIN_SCL 4
+#define OLED_WIDTH 128
+#define OLED_HEIGHT 64
+Adafruit_SSD1306 *display;
+
 //
-// LED Lighting module. 
+// LED Lighting control module. 
 //
 
 class IotsaLedstripControllerMod : public IotsaApiMod {
@@ -61,6 +70,7 @@ public:
   void loop();
 
 protected:
+  void _setupDisplay();
   bool getHandler(const char *path, JsonObject& reply);
   bool putHandler(const char *path, const JsonVariant& request, JsonObject& reply);
   void deviceFound(BLEAdvertisedDevice& device);
@@ -76,11 +86,18 @@ private:
 bool
 IotsaLedstripControllerMod::touch2() {
   IFDEBUG IotsaSerial.println("touch2()");
+  IotsaSerial.print(bleClientMod.devices.size());
+  IotsaSerial.println(" strips:");
+  display->clearDisplay();
+  display->print(bleClientMod.devices.size());
+  display->println(" strips:");
   for (auto& elem : bleClientMod.devices) {
     std::string name = elem.first;
     IotsaBLEClientConnection* conn = elem.second;
     IotsaSerial.printf("device %s, available=%d\n", name.c_str(), conn->available());
+    display->printf("%s: %d\n", name.c_str(), conn->available());
   }
+  display->display();
 
   return true;
 }
@@ -138,6 +155,7 @@ void IotsaLedstripControllerMod::configSave() {
 }
 
 void IotsaLedstripControllerMod::setup() {
+  _setupDisplay();
   pads[0].setCallback(std::bind(&IotsaLedstripControllerMod::touch2, this));
   pads[1].setCallback(std::bind(&IotsaLedstripControllerMod::touch12, this));
   pads[2].setCallback(std::bind(&IotsaLedstripControllerMod::touch13, this));
@@ -146,6 +164,21 @@ void IotsaLedstripControllerMod::setup() {
   auto callback = std::bind(&IotsaLedstripControllerMod::deviceFound, this, std::placeholders::_1);
   bleClientMod.setDeviceFoundCallback(callback);
   bleClientMod.setServiceFilter(ledstripServiceUUID);
+}
+
+void IotsaLedstripControllerMod::_setupDisplay() {
+  Wire.begin(PIN_SDA, PIN_SCL);
+  display = new Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &Wire, -1);
+  if (!display->begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false)) {
+    IFDEBUG IotsaSerial.println("OLED init failed");
+    return;
+  }
+  display->clearDisplay();
+  display->setRotation(1);
+  display->setTextSize(1);
+  display->setTextColor(WHITE);
+  display->setCursor(0, 0);
+  display->display();
 }
 
 void IotsaLedstripControllerMod::deviceFound(BLEAdvertisedDevice& device) {
