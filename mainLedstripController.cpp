@@ -76,6 +76,12 @@ private:
 bool
 IotsaLedstripControllerMod::touch2() {
   IFDEBUG IotsaSerial.println("touch2()");
+  for (auto& elem : bleClientMod.devices) {
+    std::string name = elem.first;
+    IotsaBLEClientConnection* conn = elem.second;
+    IotsaSerial.printf("device %s, available=%d\n", name.c_str(), conn->available());
+  }
+
   return true;
 }
 
@@ -144,6 +150,8 @@ void IotsaLedstripControllerMod::setup() {
 
 void IotsaLedstripControllerMod::deviceFound(BLEAdvertisedDevice& device) {
   IFDEBUG IotsaSerial.printf("Found iotsaLedstrip %s\n", device.getName().c_str());
+  // Add the device, or update the connection information
+  bleClientMod.addDevice(device.getName(), device);
 }
 
 void IotsaLedstripControllerMod::loop() {

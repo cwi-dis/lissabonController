@@ -18,7 +18,14 @@ public:
   void setDeviceFoundCallback(BleDeviceFoundCallback _callback);
   void setServiceFilter(const BLEUUID& serviceUUID);
   void setManufacturerFilter(uint16_t manufacturerID);
+
+  // These are all the devices ever seen. They are saved persistently.
+  std::map<std::string, IotsaBLEClientConnection*> devices;
+  IotsaBLEClientConnection * addDevice(std::string id, BLEAdvertisedDevice& device);
+  void delDevice(std::string id);
 protected:
+  void configLoad();
+  void configSave();
   void onResult(BLEAdvertisedDevice advertisedDevice);
   void startScanning();
   void stopScanning();
@@ -28,6 +35,7 @@ protected:
   BLEUUID* serviceFilter = NULL;
   uint16_t manufacturerFilter;
   bool hasManufacturerFilter = false;
+  std::map<std::string, IotsaBLEClientConnection*> connections;
 };
 
 #endif

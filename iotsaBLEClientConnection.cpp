@@ -1,5 +1,16 @@
 #include "iotsaBLEClientConnection.h"
 
+IotsaBLEClientConnection::IotsaBLEClientConnection(std::string& _name)
+: name(_name),
+  device(NULL),
+  client(NULL)
+{}
+
+void IotsaBLEClientConnection::setDevice(BLEAdvertisedDevice& _device) {
+  if (device != NULL) delete device;
+  device = new BLEAdvertisedDevice(_device);
+}
+
 bool IotsaBLEClientConnection::available() {
   return device != NULL;
 }

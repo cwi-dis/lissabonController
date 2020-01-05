@@ -2,9 +2,37 @@
 #include "iotsaBLEClient.h"
 #include "iotsaConfigFile.h"
 
+void IotsaBLEClientMod::configLoad() {
+  IotsaConfigFileLoad cf("/config/bleclient.cfg");
+  devices.clear();
+  int nDevice;
+  cf.get("nDevice", nDevice, 0);
+  for (int i=0; i < nDevice; i++) {
+    String name = "device" + String(i);
+    String id;
+    cf.get(name, id, "");
+    if (id) {
+      std::string idd(id.c_str());
+      IotsaBLEClientConnection* conn = new IotsaBLEClientConnection(idd);
+      devices[idd] = conn;
+    }
+  }
+}
+
+void IotsaBLEClientMod::configSave() {
+  IotsaConfigFileSave cf("/config/bleclient.cfg");
+  cf.put("nDevice", (int)devices.size());
+  int i = 0;
+  for (auto it : devices) {
+    String name = "device" + String(i);
+    String id(it.first.c_str());
+    cf.put(name, id);
+  }
+}
 
 void IotsaBLEClientMod::setup() {
   IFDEBUG IotsaSerial.println("BLEClientmod::setup()");
+  configLoad();
   BLEDevice::init(iotsaConfig.hostName.c_str());
   scanner = BLEDevice::getScan();
   scanner->setAdvertisedDeviceCallbacks(this);
@@ -66,4 +94,25 @@ void IotsaBLEClientMod::onResult(BLEAdvertisedDevice advertisedDevice) {
     if (*mfg != manufacturerFilter) return;
   }
   callback(advertisedDevice);
+}
+
+IotsaBLEClientConnection * IotsaBLEClientMod::addDevice(std::string id, BLEAdvertisedDevice& device) {
+  IotsaBLEClientConnection *dev = NULL;
+  auto it = devices.find(id);
+  if (it == devices.end()) {
+    // Device with this ID doesn't exist yet. Add it.
+    dev = new IotsaBLEClientConnection(id);
+    devices[id] = dev;
+    configSave();
+  } else {
+    dev = it->second;
+  }
+  // And we always tell the device about the advertisement getManufacturerData
+  dev->setDevice(device);
+  return dev;
+}
+
+void IotsaBLEClientMod::delDevice(std::string id) {
+  devices.erase(id);
+  configSave();
 }

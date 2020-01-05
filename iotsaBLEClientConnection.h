@@ -8,7 +8,8 @@ typedef std::function<void(uint8_t *, size_t)> BleNotificationCallback;
 class IotsaBLEClientConnection {
   friend class IotsaBLEClientMod;
 public:
-  IotsaBLEClientConnection(BLEAdvertisedDevice& device) {}
+  IotsaBLEClientConnection(std::string& _name);
+  void setDevice(BLEAdvertisedDevice& _device);
   bool available();
   bool connect();
   void disconnect();
@@ -23,6 +24,7 @@ public:
   std::string getAsString(BLEUUID& service, BLEUUID& charUUID);
   bool getAsNotification(BLEUUID& service, BLEUUID& charUUID, BleNotificationCallback callback);
 protected:
+  std::string name;
   BLERemoteCharacteristic *_getCharacteristic(BLEUUID& service, BLEUUID& charUUID);
   BLEAdvertisedDevice *device;
   BLEClient *client;
