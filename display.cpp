@@ -87,16 +87,19 @@ void Display::selectStrip(int index) {
 }
 
 void Display::setIntensity(float intensity) {
-  // xxxjack clear intensity area
-  // xxxjack draw intensity
+  oled->fillRect(INTENSITY_X, INTENSITY_Y, INTENSITY_WIDTH, INTENSITY_HEIGHT, BLACK);
+  oled->drawRect(INTENSITY_X, INTENSITY_Y, INTENSITY_WIDTH, INTENSITY_HEIGHT, WHITE);
+  oled->fillRect(INTENSITY_X, INTENSITY_Y, int(intensity*INTENSITY_WIDTH), INTENSITY_HEIGHT, BLACK);
 }
 
 void Display::clearColor() {
   // xxxjack clear color area
+  oled->fillRect(COLOR_X, COLOR_Y, COLOR_WIDTH, COLOR_HEIGHT, BLACK);
+  oled->drawRect(COLOR_X, COLOR_Y, COLOR_WIDTH, COLOR_HEIGHT, WHITE);
 }
 
 void Display::addColor(float color) {
-  // xxxjack draw line for color
+  oled->drawFastVLine(COLOR_X+int(color*COLOR_WIDTH), COLOR_Y, COLOR_HEIGHT, WHITE);
 }
 
 void Display::show() {
