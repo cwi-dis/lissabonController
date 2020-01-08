@@ -12,7 +12,7 @@
 #include "iotsaConfigFile.h"
 
 #include "display.h"
-Display display;
+Display *display;
 
 // CHANGE: Add application includes and declarations here
 
@@ -83,16 +83,16 @@ IotsaLedstripControllerMod::touch2() {
   IotsaSerial.print(bleClientMod.devices.size());
   IotsaSerial.println(" strips:");
 
-  display.clearStrips();
+  display->clearStrips();
   int index = 0;
   for (auto& elem : bleClientMod.devices) {
     index++;
     std::string name = elem.first;
     IotsaBLEClientConnection* conn = elem.second;
     IotsaSerial.printf("device %s, available=%d\n", name.c_str(), conn->available());
-    display.addStrip(index, name, conn->available());
+    display->addStrip(index, name, conn->available());
   }
-  display.show();
+  display->show();
   return true;
 }
 
@@ -161,6 +161,7 @@ void IotsaLedstripControllerMod::setup() {
 }
 
 void IotsaLedstripControllerMod::_setupDisplay() {
+  if (display == NULL) display = new Display();
 }
 
 void IotsaLedstripControllerMod::deviceFound(BLEAdvertisedDevice& device) {

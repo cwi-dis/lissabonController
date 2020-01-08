@@ -10,10 +10,23 @@
 #define OLED_HEIGHT 64
 static Adafruit_SSD1306 *oled;
 
-#define STRIPS_X 10
-#define STRIPS_Y 10
-#define STRIPS_HEIGHT 10
-#define STRIPS_WIDTH 40
+#define STRIPS_X 2
+#define STRIPS_Y 2
+#define STRIPS_HEIGHT 12
+#define STRIPS_WIDTH 60
+#define N_STRIPS 7
+
+#define SEPARATOR_Y (STRIPS_Y+STRIPS_HEIGHT*N_STRIPS+2)
+#define SEPARATOR_WIDTH 64
+#define INTENSITY_X 12
+#define INTENSITY_Y (SEPARATOR_Y+3)
+#define INTENSITY_WIDTH 40
+#define INTENSITY_HEIGHT 12
+#define COLOR_X 12
+#define COLOR_Y (INTENSITY_Y + INTENSITY_HEIGHT+2)
+#define COLOR_WIDTH 40
+#define COLOR_HEIGHT 12
+
 
 Display::Display()
 : selected(0)
@@ -29,13 +42,22 @@ Display::Display()
   oled->setTextSize(1);
   oled->setTextColor(WHITE);
   oled->setCursor(0, 0);
+  oled->println("ILC ready");
+  oled->drawFastHLine(0, SEPARATOR_Y, SEPARATOR_WIDTH, WHITE);
+  oled->setCursor(0, INTENSITY_Y+1);
+  oled->print("I:");
+  oled->drawRect(INTENSITY_X, INTENSITY_Y, INTENSITY_WIDTH, INTENSITY_HEIGHT, WHITE);
+  oled->setCursor(0, COLOR_Y+1);
+  oled->print("C:");
+  oled->drawRect(COLOR_X, COLOR_Y, COLOR_WIDTH, COLOR_HEIGHT, WHITE);
   oled->display();
 }
 
 void Display::clearStrips() {
   // xxxjack clear strip area
   // xxxjack show all in 0
-  addStrip(0, "all", true);
+  oled->fillRect(STRIPS_X-2, STRIPS_Y-2, STRIPS_WIDTH+4, STRIPS_HEIGHT*N_STRIPS+4, BLACK);
+  addStrip(0, "ALL", true);
   selected = 0;
   selectStrip(0);
 }
@@ -47,21 +69,21 @@ void Display::addStrip(int index, std::string name, bool available) {
   oled->setCursor(x, y);
   oled->print(name.c_str());
   if (!available) {
-      oled->writeFastHLine(x, y+STRIPS_HEIGHT/2, STRIPS_WIDTH, WHITE);
+      oled->writeFastHLine(x, y+STRIPS_HEIGHT/2-2, STRIPS_WIDTH, WHITE);
   }
 }
 
 void Display::selectStrip(int index) {
   // xxxjack clear ring around selected
-  int x = STRIPS_X-1;
-  int y = STRIPS_Y + selected*STRIPS_HEIGHT - 1;
-  oled->drawRect(x, y, STRIPS_WIDTH+2, STRIPS_HEIGHT+2, BLACK);
+  int x = STRIPS_X-2;
+  int y = STRIPS_Y + selected*STRIPS_HEIGHT - 2;
+  oled->drawRoundRect(x, y, STRIPS_WIDTH, STRIPS_HEIGHT, 4, BLACK);
   
   selected = index;
   // xxxjack draw ring around selected
-  x = STRIPS_X-1;
-  y = STRIPS_Y + selected*STRIPS_HEIGHT - 1;
-  oled->drawRect(x, y, STRIPS_WIDTH+2, STRIPS_HEIGHT+2, WHITE);
+  x = STRIPS_X-2;
+  y = STRIPS_Y + selected*STRIPS_HEIGHT - 2;
+  oled->drawRoundRect(x, y, STRIPS_WIDTH, STRIPS_HEIGHT, 4, WHITE);
 }
 
 void Display::setIntensity(float intensity) {
