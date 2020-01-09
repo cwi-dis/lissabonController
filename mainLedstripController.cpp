@@ -38,7 +38,9 @@ Touchpad touchpad12(12, true, false, true);
 Touchpad touchpad13(13, true, false, true);
 Touchpad touchpad14(14, true, false, true);
 Touchpad touchpad15(15, true, false, true);
+Button button0(0, true, false, true);
 Button button4(4, true, false, true);
+Button button5(5, true, false, true);
 
 Input* inputs[] = {
   &touchpad2,
@@ -46,7 +48,9 @@ Input* inputs[] = {
   &touchpad13,
   &touchpad14,
   &touchpad15,
-  &button4
+  &button0,
+  &button4,
+  &button5
 };
 
 IotsaTouchMod touchMod(application, inputs, sizeof(inputs)/sizeof(inputs[0]));
@@ -83,7 +87,9 @@ private:
   bool touch13();
   bool touch14();
   bool touch15();
+  bool button0press();
   bool button4press();
+  bool button5press();
   void updateDisplay();
 };
 
@@ -136,8 +142,20 @@ IotsaLedstripControllerMod::touch15() {
 }
 
 bool
+IotsaLedstripControllerMod::button0press() {
+  IFDEBUG IotsaSerial.println("button0()");
+  return true;
+}
+
+bool
 IotsaLedstripControllerMod::button4press() {
   IFDEBUG IotsaSerial.println("button4()");
+  return true;
+}
+
+bool
+IotsaLedstripControllerMod::button5press() {
+  IFDEBUG IotsaSerial.println("button5()");
   return true;
 }
 
@@ -176,7 +194,9 @@ void IotsaLedstripControllerMod::setup() {
   touchpad13.setCallback(std::bind(&IotsaLedstripControllerMod::touch13, this));
   touchpad14.setCallback(std::bind(&IotsaLedstripControllerMod::touch14, this));
   touchpad15.setCallback(std::bind(&IotsaLedstripControllerMod::touch15, this));
+  button0.setCallback(std::bind(&IotsaLedstripControllerMod::button0press, this));
   button4.setCallback(std::bind(&IotsaLedstripControllerMod::button4press, this));
+  button5.setCallback(std::bind(&IotsaLedstripControllerMod::button5press, this));
   auto callback = std::bind(&IotsaLedstripControllerMod::deviceFound, this, std::placeholders::_1);
   bleClientMod.setDeviceFoundCallback(callback);
   bleClientMod.setServiceFilter(ledstripServiceUUID);
