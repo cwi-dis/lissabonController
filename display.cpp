@@ -18,15 +18,19 @@ static Adafruit_SSD1306 *oled;
 
 #define SEPARATOR_Y (STRIPS_Y+STRIPS_HEIGHT*N_STRIPS+2)
 #define SEPARATOR_WIDTH 64
-#define INTENSITY_X 12
+#define INTENSITY_X 13
 #define INTENSITY_Y (SEPARATOR_Y+3)
-#define INTENSITY_WIDTH 40
+#define INTENSITY_WIDTH 38
 #define INTENSITY_HEIGHT 12
-#define COLOR_X 12
+#define COLOR_X 13
 #define COLOR_Y (INTENSITY_Y + INTENSITY_HEIGHT+2)
-#define COLOR_WIDTH 40
+#define COLOR_WIDTH 38
 #define COLOR_HEIGHT 12
 
+#include "icons/on.h"
+#include "icons/off.h"
+#include "icons/sun.h"
+#include "icons/lightbulb.h"
 
 Display::Display()
 : selected(0)
@@ -43,13 +47,16 @@ Display::Display()
   oled->setTextColor(WHITE);
   oled->setCursor(0, 0);
   oled->println("ILC ready");
+
   oled->drawFastHLine(0, SEPARATOR_Y, SEPARATOR_WIDTH, WHITE);
-  oled->setCursor(0, INTENSITY_Y+1);
-  oled->print("I:");
+
+  oled->drawXBitmap(0, INTENSITY_Y, off_bits, off_width, off_height, WHITE);
   oled->drawRect(INTENSITY_X, INTENSITY_Y, INTENSITY_WIDTH, INTENSITY_HEIGHT, WHITE);
-  oled->setCursor(0, COLOR_Y+1);
-  oled->print("C:");
+  oled->drawXBitmap(INTENSITY_X+INTENSITY_WIDTH+1, INTENSITY_Y, on_bits, on_width, on_height, WHITE);
+
+  oled->drawXBitmap(0, COLOR_Y, lightbulb_bits, lightbulb_width, lightbulb_height, WHITE);
   oled->drawRect(COLOR_X, COLOR_Y, COLOR_WIDTH, COLOR_HEIGHT, WHITE);
+  oled->drawXBitmap(COLOR_X+COLOR_WIDTH+1, COLOR_Y, sun_bits, sun_width, sun_height, WHITE);
   oled->display();
 }
 
