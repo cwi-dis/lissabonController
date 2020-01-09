@@ -21,8 +21,9 @@ public:
 
   // These are all the devices ever seen. They are saved persistently.
   std::map<std::string, IotsaBLEClientConnection*> devices;
-  IotsaBLEClientConnection * addDevice(std::string id, BLEAdvertisedDevice& device);
+  bool addDevice(std::string id, BLEAdvertisedDevice& device);
   void delDevice(std::string id);
+  void clearDevicesSeen();
 protected:
   void configLoad();
   void configSave();

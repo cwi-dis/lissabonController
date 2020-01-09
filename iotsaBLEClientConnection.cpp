@@ -6,9 +6,21 @@ IotsaBLEClientConnection::IotsaBLEClientConnection(std::string& _name)
   client(NULL)
 {}
 
-void IotsaBLEClientConnection::setDevice(BLEAdvertisedDevice& _device) {
+bool IotsaBLEClientConnection::setDevice(BLEAdvertisedDevice& _device) {
+  if (device != NULL) {
+    // Check whether the address is the same, then we don't have to add anything.
+    if (_device.getAddressType() == device->getAddressType() && _device.getAddress().equals(device->getAddress())) {
+      return false;
+    }
+  }
+  // No device, or different address.
   if (device != NULL) delete device;
   device = new BLEAdvertisedDevice(_device);
+  return true;
+}
+
+void IotsaBLEClientConnection::clearDevice() {
+  if (device != NULL) delete device;
 }
 
 bool IotsaBLEClientConnection::available() {

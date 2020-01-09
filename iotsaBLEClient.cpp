@@ -96,7 +96,7 @@ void IotsaBLEClientMod::onResult(BLEAdvertisedDevice advertisedDevice) {
   callback(advertisedDevice);
 }
 
-IotsaBLEClientConnection * IotsaBLEClientMod::addDevice(std::string id, BLEAdvertisedDevice& device) {
+bool IotsaBLEClientMod::addDevice(std::string id, BLEAdvertisedDevice& device) {
   IotsaBLEClientConnection *dev = NULL;
   auto it = devices.find(id);
   if (it == devices.end()) {
@@ -108,11 +108,16 @@ IotsaBLEClientConnection * IotsaBLEClientMod::addDevice(std::string id, BLEAdver
     dev = it->second;
   }
   // And we always tell the device about the advertisement getManufacturerData
-  dev->setDevice(device);
-  return dev;
+  return dev->setDevice(device);
 }
 
 void IotsaBLEClientMod::delDevice(std::string id) {
   devices.erase(id);
   configSave();
+}
+
+void IotsaBLEClientMod::clearDevicesSeen() {
+  for (auto it : devices) {
+    it.second->clearDevice();
+  }
 }

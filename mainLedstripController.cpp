@@ -75,11 +75,11 @@ private:
   bool touch13();
   bool touch14();
   bool touch15();
+  void updateDisplay();
 };
 
-bool
-IotsaLedstripControllerMod::touch2() {
-  IFDEBUG IotsaSerial.println("touch2()");
+void 
+IotsaLedstripControllerMod::updateDisplay() {
   IotsaSerial.print(bleClientMod.devices.size());
   IotsaSerial.println(" strips:");
 
@@ -93,6 +93,12 @@ IotsaLedstripControllerMod::touch2() {
     display->addStrip(index, name, conn->available());
   }
   display->show();
+}
+
+bool
+IotsaLedstripControllerMod::touch2() {
+  IFDEBUG IotsaSerial.println("touch2()");
+  updateDisplay();
   return true;
 }
 
@@ -162,12 +168,15 @@ void IotsaLedstripControllerMod::setup() {
 
 void IotsaLedstripControllerMod::_setupDisplay() {
   if (display == NULL) display = new Display();
+  updateDisplay();
 }
 
 void IotsaLedstripControllerMod::deviceFound(BLEAdvertisedDevice& device) {
   IFDEBUG IotsaSerial.printf("Found iotsaLedstrip %s\n", device.getName().c_str());
   // Add the device, or update the connection information
-  bleClientMod.addDevice(device.getName(), device);
+  if (bleClientMod.addDevice(device.getName(), device)) {
+    updateDisplay();
+  }
 }
 
 void IotsaLedstripControllerMod::loop() {
