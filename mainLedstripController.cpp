@@ -32,7 +32,7 @@ IotsaOtaMod otaMod(application);
 #define VBAT_100_PERCENT (12.0/11.0) // 100K and 1M resistors divide by 11, not 10...
 IotsaBatteryMod batteryMod(application);
 
-#include "iotsaTouch.h"
+#include "iotsaInput.h"
 Touchpad touchpad2(2, true, false, true);
 Touchpad touchpad12(12, true, false, true);
 Touchpad touchpad13(13, true, false, true);
@@ -53,7 +53,7 @@ Input* inputs[] = {
   &button5
 };
 
-IotsaTouchMod touchMod(application, inputs, sizeof(inputs)/sizeof(inputs[0]));
+IotsaInputMod touchMod(application, inputs, sizeof(inputs)/sizeof(inputs[0]));
 
 #include "iotsaBLEClient.h"
 IotsaBLEClientMod bleClientMod(application);
