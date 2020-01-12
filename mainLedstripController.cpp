@@ -135,12 +135,14 @@ IotsaLedstripControllerMod::touch15() {
 bool
 IotsaLedstripControllerMod::buttonPress() {
   IFDEBUG IotsaSerial.println("buttonPress()");
+  iotsaConfig.postponeSleep(4000);
   return true;
 }
 
 bool
 IotsaLedstripControllerMod::encoderChanged() {
   IFDEBUG IotsaSerial.println("encoderChanged()");
+  iotsaConfig.postponeSleep(4000);
   return true;
 }
 
