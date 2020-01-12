@@ -58,7 +58,11 @@ void Input::setCallback(ActivationCallbackType callback)
 
 Touchpad::Touchpad(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake)
 : Input(_actOnPress, _actOnRelease, _wake),
-  pin(_pin)
+  pressed(false),
+  pin(_pin),
+  debounceState(false),
+  debounceTime(0),
+  threshold(20)
 {
 }
 
@@ -80,10 +84,10 @@ void Touchpad::loop() {
     iotsaConfig.postponeSleep(DEBOUNCE_DELAY*2);
   }
   debounceState = state;
-  if (millis() > debounceTime + DEBOUNCE_DELAY && state != buttonState) {
+  if (millis() > debounceTime + DEBOUNCE_DELAY && state != pressed) {
     // The touchpad has been in the new state for long enough for us to trust it.
-    buttonState = state;
-    bool doSend = (buttonState && actOnPress) || (!buttonState && actOnRelease);
+    pressed = state;
+    bool doSend = (pressed && actOnPress) || (!pressed && actOnRelease);
     IFDEBUG IotsaSerial.printf("Touch callback for button pin %d state %d value %d\n", pin, state, value);
     if (doSend && activationCallback) {
       activationCallback();
@@ -94,7 +98,10 @@ void Touchpad::loop() {
 
 Button::Button(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake)
 : Input(_actOnPress, _actOnRelease, _wake),
-  pin(_pin)
+  pressed(false),
+  pin(_pin),
+  debounceState(false),
+  debounceTime(0)
 {
 }
 
@@ -121,11 +128,55 @@ void Button::loop() {
     iotsaConfig.postponeSleep(DEBOUNCE_DELAY*2);
   }
   debounceState = state;
-  if (millis() > debounceTime + DEBOUNCE_DELAY && state != buttonState) {
+  if (millis() > debounceTime + DEBOUNCE_DELAY && state != pressed) {
     // The touchpad has been in the new state for long enough for us to trust it.
-    buttonState = state;
-    bool doSend = (buttonState && actOnPress) || (!buttonState && actOnRelease);
+    pressed = state;
+    bool doSend = (pressed && actOnPress) || (!pressed && actOnRelease);
     IFDEBUG IotsaSerial.printf("Button callback for button pin %d state %d\n", pin, state);
+    if (doSend && activationCallback) {
+      activationCallback();
+    }
+  }
+}
+
+RotaryEncoder::RotaryEncoder(int _pinA, int _pinB, bool _wake)
+: Input(true, true, _wake),
+  value(0),
+  pinA(_pinA),
+  pinB(_pinB),
+  pinAstate(false)
+{
+}
+
+void RotaryEncoder::setup() {
+  pinMode(pinA, INPUT_PULLUP);
+  pinMode(pinB, INPUT_PULLUP);
+  pinAstate = digitalRead(pinA) == LOW;
+  if (wake) {
+    // xxxjack unsure about this: would "wake on any high" mean on positive flanks (as I hope) or
+    // would this mean the cpu remain awake when any pin is level high? To be determined.
+    bitmaskButtonWakeHigh |= 1LL << pinA;
+    bitmaskButtonWakeHigh |= 1LL << pinB;
+  }
+
+}
+
+void RotaryEncoder::loop() {
+  bool pinAnewState = digitalRead(pinA) == LOW;
+
+  if (pinAnewState != pinAstate) {
+    // PinA is in a new state
+    pinAstate = pinAnewState;
+    // If pinA changed state high read pinB to determine whether this is an increment or a decrement.
+    bool pinBstate = digitalRead(pinB) == LOW;
+    bool increment = pinAstate != pinBstate;
+    if (increment) {
+      value++;
+    } else {
+      value--;
+    }
+    bool doSend = (increment && actOnPress) || (!increment && actOnRelease);
+    IFDEBUG IotsaSerial.printf("RotaryEncoder callback for button pin %d,%d state %d,%d increment %d value %d\n", pinA, pinB, pinAstate, pinBstate, increment, value);
     if (doSend && activationCallback) {
       activationCallback();
     }
