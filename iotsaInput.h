@@ -46,7 +46,7 @@ protected:
 
 class RotaryEncoder : public Input {
 public:
-  RotaryEncoder(int _pinA, int _pinB, bool _wake=false);
+  RotaryEncoder(int _pinA, int _pinB);
   void setup();
   void loop();
   int value;

@@ -38,7 +38,7 @@ Touchpad touchpad13(13, true, false, true);
 Touchpad touchpad14(14, true, false, true);
 Touchpad touchpad15(15, true, false, true);
 Button button(0, true, false, true);
-RotaryEncoder encoder(4, 2, false);
+RotaryEncoder encoder(4, 2);
 
 Input* inputs[] = {
   &touchpad12,

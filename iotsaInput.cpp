@@ -149,8 +149,8 @@ void Button::loop() {
   }
 }
 
-RotaryEncoder::RotaryEncoder(int _pinA, int _pinB, bool _wake)
-: Input(true, true, _wake),
+RotaryEncoder::RotaryEncoder(int _pinA, int _pinB)
+: Input(true, true, false),
   value(0),
   pinA(_pinA),
   pinB(_pinB),
