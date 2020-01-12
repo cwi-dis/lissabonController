@@ -38,7 +38,7 @@ Touchpad touchpad13(13, true, false, true);
 Touchpad touchpad14(14, true, false, true);
 Touchpad touchpad15(15, true, false, true);
 Button button(0, true, false, true);
-RotaryEncoder encoder(4, 2, true);
+RotaryEncoder encoder(4, 2, false);
 
 Input* inputs[] = {
   &touchpad12,
@@ -173,6 +173,9 @@ void IotsaLedstripControllerMod::configSave() {
 }
 
 void IotsaLedstripControllerMod::setup() {
+#ifdef PIN_DISABLESLEEP
+  batteryMod.setPinDisableSleep(PIN_DISABLESLEEP);
+#endif
   _setupDisplay();
   touchpad12.setCallback(std::bind(&IotsaLedstripControllerMod::touch12, this));
   touchpad13.setCallback(std::bind(&IotsaLedstripControllerMod::touch13, this));

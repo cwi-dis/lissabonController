@@ -17,18 +17,28 @@ void IotsaInputMod::setup() {
     inputs[i]->setup();
   }
   esp_err_t err;
+  if (bitmaskButtonWakeHigh && buttonWakeLow && anyWakeOnTouch) {
+    IotsaSerial.println("IotsaInputMod: too many incompatible wakeup sources");
+  }
   if (anyWakeOnTouch) {
     IFDEBUG IotsaSerial.println("IotsaInputMod: enable wake on touch");
     err = esp_sleep_enable_touchpad_wakeup();
     if (err != ESP_OK) IotsaSerial.println("Error in touchpad_wakeup");
   }
   if (bitmaskButtonWakeHigh) {
+    IFDEBUG IotsaSerial.println("IotsaInputMod: enable wake on some high pins");
     err = esp_sleep_enable_ext1_wakeup(bitmaskButtonWakeHigh, ESP_EXT1_WAKEUP_ANY_HIGH);
-    if (err != ESP_OK) IotsaSerial.println("Error in ext1_wakeup");
+    if (err != ESP_OK) IotsaSerial.println("Error in ext1_wakeup HIGH");
   }
-  if (buttonWakeLow > 0) {
-    err = esp_sleep_enable_ext0_wakeup((gpio_num_t)buttonWakeLow, 0);
-    if (err != ESP_OK) IotsaSerial.println("Error in ext0_wakeup");
+  if (buttonWakeLow >= 0) {
+    if (!anyWakeOnTouch) {
+      IFDEBUG IotsaSerial.println("IotsaInputMod: enable wake on one low pins");
+      err = esp_sleep_enable_ext0_wakeup((gpio_num_t)buttonWakeLow, 0);
+      if (err != ESP_OK) IotsaSerial.println("Error in ext0_wakeup");
+    } else {
+      err = esp_sleep_enable_ext1_wakeup(1<<buttonWakeLow, ESP_EXT1_WAKEUP_ALL_LOW);
+      if (err != ESP_OK) IotsaSerial.println("Error in ext1_wakeup LOW");
+    }
   }
 }
 
