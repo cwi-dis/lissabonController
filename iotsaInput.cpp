@@ -69,10 +69,12 @@ void Input::setCallback(ActivationCallbackType callback)
 Touchpad::Touchpad(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake)
 : Input(_actOnPress, _actOnRelease, _wake),
   pressed(false),
+  duration(0),
   pin(_pin),
   debounceState(false),
   debounceTime(0),
-  threshold(20)
+  threshold(20),
+  lastChangeMillis(0)
 {
 }
 
@@ -97,6 +99,10 @@ void Touchpad::loop() {
   if (millis() > debounceTime + DEBOUNCE_DELAY && state != pressed) {
     // The touchpad has been in the new state for long enough for us to trust it.
     pressed = state;
+    if (lastChangeMillis) {
+      duration = millis() - lastChangeMillis;
+    }
+    lastChangeMillis = millis();
     bool doSend = (pressed && actOnPress) || (!pressed && actOnRelease);
     IFDEBUG IotsaSerial.printf("Touch callback for button pin %d state %d value %d\n", pin, state, value);
     if (doSend && activationCallback) {
@@ -109,9 +115,11 @@ void Touchpad::loop() {
 Button::Button(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake)
 : Input(_actOnPress, _actOnRelease, _wake),
   pressed(false),
+  duration(0),
   pin(_pin),
   debounceState(false),
-  debounceTime(0)
+  debounceTime(0),
+  lastChangeMillis(0)
 {
 }
 
@@ -141,6 +149,10 @@ void Button::loop() {
   if (millis() > debounceTime + DEBOUNCE_DELAY && state != pressed) {
     // The touchpad has been in the new state for long enough for us to trust it.
     pressed = state;
+    if (lastChangeMillis) {
+      duration = millis() - lastChangeMillis;
+    }
+    lastChangeMillis = millis();
     bool doSend = (pressed && actOnPress) || (!pressed && actOnRelease);
     IFDEBUG IotsaSerial.printf("Button callback for button pin %d state %d\n", pin, state);
     if (doSend && activationCallback) {
@@ -152,9 +164,11 @@ void Button::loop() {
 RotaryEncoder::RotaryEncoder(int _pinA, int _pinB)
 : Input(true, true, false),
   value(0),
+  duration(0),
   pinA(_pinA),
   pinB(_pinB),
-  pinAstate(false)
+  pinAstate(false),
+  lastChangeMillis(0)
 {
 }
 
@@ -175,6 +189,10 @@ void RotaryEncoder::loop() {
   bool pinAnewState = digitalRead(pinA) == LOW;
 
   if (pinAnewState != pinAstate) {
+    if (lastChangeMillis) {
+      duration = millis() - lastChangeMillis;
+    }
+    lastChangeMillis = millis();
     // PinA is in a new state
     pinAstate = pinAnewState;
     // If pinA changed state high read pinB to determine whether this is an increment or a decrement.
@@ -186,7 +204,7 @@ void RotaryEncoder::loop() {
       value--;
     }
     bool doSend = (increment && actOnPress) || (!increment && actOnRelease);
-    IFDEBUG IotsaSerial.printf("RotaryEncoder callback for button pin %d,%d state %d,%d increment %d value %d\n", pinA, pinB, pinAstate, pinBstate, increment, value);
+    IFDEBUG IotsaSerial.printf("RotaryEncoder callback for button pin %d,%d state %d,%d increment %d value %d duration %u\n", pinA, pinB, pinAstate, pinBstate, increment, value, duration);
     if (doSend && activationCallback) {
       activationCallback();
     }

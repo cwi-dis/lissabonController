@@ -25,11 +25,13 @@ public:
   void setup();
   void loop();
   bool pressed;
+  uint32_t duration;
 protected:
   int pin;
   bool debounceState;
   unsigned int debounceTime;
   uint16_t threshold;
+  uint32_t lastChangeMillis;
 };
 
 class Button : public Input {
@@ -38,10 +40,12 @@ public:
   void setup();
   void loop();
   bool pressed;
+  uint32_t duration;
 protected:
   int pin;
   bool debounceState;
   unsigned int debounceTime;
+  uint32_t lastChangeMillis;
 };
 
 class RotaryEncoder : public Input {
@@ -50,10 +54,12 @@ public:
   void setup();
   void loop();
   int value;
+  uint32_t duration;
 protected:
   int pinA;
   int pinB;
   bool pinAstate;
+  uint32_t lastChangeMillis;
 };
 
 class IotsaInputMod : public IotsaMod {
