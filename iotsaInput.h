@@ -19,21 +19,6 @@ protected:
   ActivationCallbackType activationCallback;
 };
 
-class Touchpad : public Input {
-public:
-  Touchpad(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake=false);
-  void setup();
-  void loop();
-  bool pressed;
-  uint32_t duration;
-protected:
-  int pin;
-  bool debounceState;
-  unsigned int debounceTime;
-  uint16_t threshold;
-  uint32_t lastChangeMillis;
-};
-
 class Button : public Input {
 public:
   Button(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake=false);
@@ -48,6 +33,17 @@ protected:
   uint32_t lastChangeMillis;
 };
 
+class Touchpad : public Button {
+public:
+  Touchpad(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake=false);
+  void setup();
+  void loop();
+  bool pressed;
+  uint32_t duration;
+protected:
+  uint16_t threshold;
+};
+
 class RotaryEncoder : public Input {
 public:
   RotaryEncoder(int _pinA, int _pinB);
@@ -60,6 +56,20 @@ protected:
   int pinB;
   bool pinAstate;
   uint32_t lastChangeMillis;
+};
+
+class UpDownButtons : public Input {
+public:
+  UpDownButtons(Button& _up, Button& _down);
+  void setup();
+  void loop();
+  int value;
+  uint32_t duration;
+protected:
+  Button& up;
+  Button& down;
+  bool _upPressed();
+  bool _downPressed();
 };
 
 class IotsaInputMod : public IotsaMod {

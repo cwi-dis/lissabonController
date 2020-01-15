@@ -66,52 +66,6 @@ void Input::setCallback(ActivationCallbackType callback)
   activationCallback = callback;
 }
 
-Touchpad::Touchpad(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake)
-: Input(_actOnPress, _actOnRelease, _wake),
-  pressed(false),
-  duration(0),
-  pin(_pin),
-  debounceState(false),
-  debounceTime(0),
-  threshold(20),
-  lastChangeMillis(0)
-{
-}
-
-void Touchpad::setup() {
-  if (wake) {
-    anyWakeOnTouch = true;
-    touchAttachInterrupt(pin, dummyTouchCallback, threshold);
-  }
-}
-
-void Touchpad::loop() {
-  uint16_t value = touchRead(pin);
-  if (value == 0) return;
-  bool state = value < threshold;
-  if (state != debounceState) {
-    // The touchpad seems to have changed state. But we want
-    // it to remain in the new state for some time (to cater for 50Hz/60Hz interference)
-    debounceTime = millis();
-    iotsaConfig.postponeSleep(DEBOUNCE_DELAY*2);
-  }
-  debounceState = state;
-  if (millis() > debounceTime + DEBOUNCE_DELAY && state != pressed) {
-    // The touchpad has been in the new state for long enough for us to trust it.
-    pressed = state;
-    if (lastChangeMillis) {
-      duration = millis() - lastChangeMillis;
-    }
-    lastChangeMillis = millis();
-    bool doSend = (pressed && actOnPress) || (!pressed && actOnRelease);
-    IFDEBUG IotsaSerial.printf("Touch callback for button pin %d state %d value %d\n", pin, state, value);
-    if (doSend && activationCallback) {
-      activationCallback();
-    }
-  }
-  
-}
-
 Button::Button(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake)
 : Input(_actOnPress, _actOnRelease, _wake),
   pressed(false),
@@ -159,6 +113,46 @@ void Button::loop() {
       activationCallback();
     }
   }
+}
+
+
+Touchpad::Touchpad(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake)
+: Button(_actOnPress, _actOnRelease, _wake),
+  threshold(20)
+{
+}
+
+void Touchpad::setup() {
+  if (wake) {
+    anyWakeOnTouch = true;
+    touchAttachInterrupt(pin, dummyTouchCallback, threshold);
+  }
+}
+
+void Touchpad::loop() {
+  uint16_t value = touchRead(pin);
+  if (value == 0) return;
+  bool state = value < threshold;
+  if (state != debounceState) {
+    // The touchpad seems to have changed state. But we want
+    // it to remain in the new state for some time (to cater for 50Hz/60Hz interference)
+    debounceTime = millis();
+    iotsaConfig.postponeSleep(DEBOUNCE_DELAY*2);
+  }
+  debounceState = state;
+  if (millis() > debounceTime + DEBOUNCE_DELAY && state != pressed) {
+    // The touchpad has been in the new state for long enough for us to trust it.
+    pressed = state;
+    if (lastChangeMillis) {
+      duration = millis() - lastChangeMillis;
+    }
+    lastChangeMillis = millis();
+    bool doSend = (pressed && actOnPress) || (!pressed && actOnRelease);
+    IFDEBUG IotsaSerial.printf("Touch callback for button pin %d state %d value %d\n", pin, state, value);
+    if (doSend && activationCallback) {
+      activationCallback();
+    }
+  }  
 }
 
 RotaryEncoder::RotaryEncoder(int _pinA, int _pinB)
@@ -209,4 +203,38 @@ void RotaryEncoder::loop() {
       activationCallback();
     }
   }
+}
+
+
+UpDownButtons::UpDownButtons(Button& _up, Button& _down)
+: Input(true, true, false),
+  value(0),
+  duration(0),
+  up(_up),
+  down(_down)
+{
+//  up.setCallback(std::bind());
+//  down.setCallback(std::bind());
+}
+
+void UpDownButtons::setup() {
+  up.setup();
+  down.setup();
+}
+
+void UpDownButtons::loop() {
+  up.loop();
+  down.loop();
+}
+
+bool UpDownButtons::_upPressed() {
+  value++;
+  if (actOnPress && activationCallback) activationCallback();
+  return true;
+}
+
+bool UpDownButtons::_downPressed() {
+  value--;
+  if (actOnRelease && activationCallback) activationCallback();
+  return true;
 }
