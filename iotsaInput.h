@@ -24,23 +24,30 @@ public:
   Button(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake=false);
   void setup();
   void loop();
+  void setRepeat(uint32_t _firstRepeat, uint32_t _minRepeat);
   bool pressed;
   uint32_t duration;
 protected:
+  virtual bool _getState();
   int pin;
   bool debounceState;
   unsigned int debounceTime;
   uint32_t lastChangeMillis;
+  uint32_t firstRepeat;
+  uint32_t minRepeat;
+  uint32_t curRepeat;
+  uint32_t nextRepeat;
 };
 
 class Touchpad : public Button {
 public:
   Touchpad(int _pin, bool _actOnPress, bool _actOnRelease, bool _wake=false);
   void setup();
-  void loop();
+  // void loop() is used from Button
   bool pressed;
   uint32_t duration;
 protected:
+  bool _getState();
   uint16_t threshold;
 };
 
@@ -64,7 +71,6 @@ public:
   void setup();
   void loop();
   int value;
-  uint32_t duration;
 protected:
   Button& up;
   Button& down;
